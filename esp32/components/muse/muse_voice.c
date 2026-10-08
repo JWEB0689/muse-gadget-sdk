@@ -324,11 +324,19 @@ static bool record(bool barge_in, size_t *held, char *why, size_t cap)
     muse_state_set_level(0);
     *held = n - pre;
 
-    char tail[160];
-    int tl = 0;
+    char tail[160] = {0};
+    size_t tl = 0;
     size_t shown = st.chunks < 25 ? st.chunks : 25;
     for (size_t i = st.chunks - shown; i < st.chunks; i++) {
-        tl += snprintf(tail + tl, sizeof(tail) - tl, " %.0f", st.tail_db[i % 25]);
+        int wrote = snprintf(tail + tl, sizeof(tail) - tl, " %.0f", st.tail_db[i % 25]);
+        if (wrote < 0) {
+            break;
+        }
+        if ((size_t)wrote >= sizeof(tail) - tl) {
+            tl = sizeof(tail) - 1;
+            break;
+        }
+        tl += (size_t)wrote;
     }
     ESP_LOGI(TAG, "end levels:%s", tail);
     float rms_db = st.frames ? 10.0f * log10f((float)(st.acc / st.frames / (32768.0 * 32768.0)) + 1e-10f) : -100.0f;
