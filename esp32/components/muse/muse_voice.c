@@ -329,11 +329,7 @@ static bool record(bool barge_in, size_t *held, char *why, size_t cap)
     size_t shown = st.chunks < 25 ? st.chunks : 25;
     for (size_t i = st.chunks - shown; i < st.chunks; i++) {
         int wrote = snprintf(tail + tl, sizeof(tail) - tl, " %.0f", st.tail_db[i % 25]);
-        if (wrote < 0) {
-            break;
-        }
-        if ((size_t)wrote >= sizeof(tail) - tl) {
-            tl = sizeof(tail) - 1;
+        if (wrote < 0 || (size_t)wrote >= sizeof(tail) - tl) {
             break;
         }
         tl += (size_t)wrote;
